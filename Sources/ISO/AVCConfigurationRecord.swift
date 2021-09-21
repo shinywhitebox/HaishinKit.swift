@@ -48,29 +48,23 @@ struct AVCConfigurationRecord {
     }
 
     func createFormatDescription(_ formatDescriptionOut: UnsafeMutablePointer<CMFormatDescription?>) -> OSStatus {
-        sequenceParameterSets[0].withUnsafeBufferPointer { sps -> OSStatus in
-            pictureParameterSets[0].withUnsafeBufferPointer { pps -> OSStatus in
-                let parameterSetPointers: [UnsafePointer<UInt8>] = [
-                    sps.baseAddress!, pps.baseAddress!
-                ]
-                let parameterSetSizes: [Int] = [
-                    sps.count,
-                    pps.count
-                ]
-                return parameterSetPointers.withUnsafeBufferPointer { paramSet in
-                    parameterSetSizes.withUnsafeBufferPointer { paramSizes in
-                        CMVideoFormatDescriptionCreateFromH264ParameterSets(
-                                allocator: kCFAllocatorDefault,
-                                parameterSetCount: 2,
-                                parameterSetPointers: paramSet.baseAddress!,
-                                parameterSetSizes: paramSizes.baseAddress!,
-                                nalUnitHeaderLength: naluLength,
-                                formatDescriptionOut: formatDescriptionOut
-                        )
-                    }
-                }
-            }
-        }
+        var parameterSetPointers: [UnsafePointer<UInt8>] = [
+            UnsafePointer<UInt8>(sequenceParameterSets[0]),
+            UnsafePointer<UInt8>(pictureParameterSets[0])
+        ]
+        var parameterSetSizes: [Int] = [
+            sequenceParameterSets[0].count,
+            pictureParameterSets[0].count
+        ]
+        return CMVideoFormatDescriptionCreateFromH264ParameterSets(
+            allocator: kCFAllocatorDefault,
+            parameterSetCount: 2,
+            parameterSetPointers: &parameterSetPointers,
+            parameterSetSizes: &parameterSetSizes,
+            nalUnitHeaderLength: naluLength,
+            formatDescriptionOut: formatDescriptionOut
+        )
+        
     }
 }
 
