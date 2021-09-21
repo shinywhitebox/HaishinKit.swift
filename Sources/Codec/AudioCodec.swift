@@ -236,7 +236,9 @@ public class AudioCodec {
             }
 
             for i in 0..<outOutputData.count {
-                free(outOutputData[i].mData)
+                if let ptr = outOutputData[i].mData {
+                    free(ptr)
+                }
             }
 
             free(outOutputData.unsafeMutablePointer)
